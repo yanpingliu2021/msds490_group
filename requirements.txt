@@ -1,0 +1,16 @@
+pylint==2.8.2
+numpy==1.20.0
+pandas==1.2.4
+networkx==2.5.1
+plotly==4.14.3
+dash==1.20.0
+Flask==1.1.2
+pylint-flask==0.6
+Flask-API==2.0
+pytest==6.2.
+pytest-cov==2.11.1
+ipykernel==5.5.3
+pyarrow==3.0.0
+openpyxl==3.0.7
+pandasql==0.7.3
+python-louvain==0.15
