@@ -9,12 +9,12 @@ np.set_printoptions(suppress=True)
 np.set_printoptions(precision=3)
 
 
-clinical_util = pd.read_csv("data/raw/ClinicianUtilization_2017.csv")
+clinical_util = pd.read_csv("../data/raw/ClinicianUtilization_2017.csv")
 clinical_util.head()
 clinical_util.shape
 # (1354610, 10)
 
-prov = pd.read_csv("data/raw/DAC_NationalDownloadableFile.csv",
+prov = pd.read_csv("../data/raw/DAC_NationalDownloadableFile.csv",
                    dtype={
                     'NPI':str,
                     ' Ind_PAC_ID':str,
@@ -79,7 +79,7 @@ prov.shape
 #  .groupby("npi")["num_org_mem"]\
 #  .rank(method="dense", ascending=False, na_option='keep')\
 #  .fillna(1)
-  
+
 #prov.head()
 #prov_affl = pd.melt(
 #  prov,
@@ -90,7 +90,7 @@ prov.shape
 #    .query('afl_org_nm==afl_org_nm')\
 #    .drop_duplicates()\
 #    .reset_index(drop=True)
-zip_lat_lon = pd.read_excel('data/raw/us-zip-code-latitude-and-longitude.xlsx', 
+zip_lat_lon = pd.read_excel('../data/raw/us-zip-code-latitude-and-longitude.xlsx',
                             engine='openpyxl', dtype = {'Zip':str})
 zip_lat_lon.columns = [x.lower() for x in zip_lat_lon.columns]
 zip_lat_lon.dtypes
@@ -112,7 +112,7 @@ prov_affl = prov[['npi', 'org_nm', 'org_pac_id', 'num_org_mem',
 prov_affl.shape
 #(2072300, 11)
 
-prov_affl.to_parquet('data/processed/provider_affiliation.parquet', index=False)
+prov_affl.to_parquet('../data/processed/provider_affiliation.parquet', index=False)
 prov_affl.head()
 prov_affl.nunique()
 
@@ -137,6 +137,6 @@ zip             16256
 lat             16149
 long            16102
 """
-org_demo.to_parquet('data/processed/organization_demographics.parquet', index=False)
+org_demo.to_parquet('../data/processed/organization_demographics.parquet', index=False)
 
 
