@@ -7,18 +7,8 @@ __pycache__/
 *.so
 
 # project specific
-data/*/*.csv
-data/*/*.xls*
-data/*/*.parquet
-data/*/*.txt
-data/*.xls*
-data/*.csv*
-data/*.parquet*
-data/*.DS_*
-data/*/*.DS_*
+data/raw/*.csv
 .vscode/
-!data/network/*
-!data/fact/*
 *.DS_Store
 
 # Distribution / packaging
