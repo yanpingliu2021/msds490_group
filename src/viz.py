@@ -1,26 +1,8 @@
 import pandas as pd
-import numpy as np
-from affiliation_network import affiliationnetwork
-import plotly.graph_objects as go
 import plotly.express as px
 
-network_cls = affiliationnetwork()
-network_cls.construct_network()
-network_topology, network_metrics, community_metrics = network_cls.community_detection()
-"""
-Name:
-Type: DiGraph
-Number of nodes: 36543
-Number of edges: 189012
-Average in degree:   5.1723
-Average out degree:   5.1723
 
-unique communities:3307
-"""
-
-affiliation_fact = pd.read_parquet('../data/network/affiliation_fact.parquet')
-affiliation_fact.head()
-
+community_metrics = pd.read_csv('../data/network/affiliation_community_metrics.csv')
 fig = px.scatter_geo(community_metrics, lon="long", lat='lat',
                      size="total_orgs_in_community",
                      color = 'total_shared_doctors_in_community',
