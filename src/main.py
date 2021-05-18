@@ -3,10 +3,12 @@ import numpy as np
 from affiliation_network import affiliationnetwork
 import plotly.graph_objects as go
 import plotly.express as px
+import networkx as nx
 
 network_cls = affiliationnetwork()
 network_cls.construct_network()
-network_topology, network_metrics, community_metrics = network_cls.community_detection()
+network_cls.community_detection()
+network_topology, network_metrics, community_metrics = network_cls.writer()
 """
 Name:
 Type: DiGraph
