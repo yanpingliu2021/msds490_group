@@ -1,10 +1,31 @@
 import pickle
 from cdlib import NodeClustering
 from cdlib import evaluation
-from cdlib import viz
 from collections import defaultdict
 import pandas as pd
 
+def louvain_to_cdlib_coms(G, coms):
+    uG = G.to_undirected()
+    coms_to_node = defaultdict(list)
+    for n, c in coms.items():
+        coms_to_node[c].append(n)
+
+    coms_louvain = [list(c) for c in coms_to_node.values()]
+
+    cdlib_coms = NodeClustering(
+        coms_louvain, uG, 'louvain',
+        method_parameters={'weight':'shared_doctors'}
+    )
+    return cdlib_coms
+
+def cdlib_coms_to_pandas(cdlib_coms):
+    com_df = pd.DataFrame(
+        [(x, idx+1) for idx, x in enumerate(cdlib_coms.communities)],
+        columns=['org_pac_id', 'community_id'])\
+        .explode('org_pac_id')\
+        .reset_index(drop = True)
+
+    return com_df
 
 class PickleUtils(object):
     """
@@ -28,34 +49,25 @@ class PickleUtils(object):
 
 
 
-def community_evaluation_metrics(coms, G):
-    G = G.to_undirected()
-    coms_to_node = defaultdict(list)
-    for n, c in coms.items():
-        coms_to_node[c].append(n)
-
-    louvain_coms = NodeClustering(
-        [list(c) for c in coms_to_node.values()], G, 'louvain',
-        method_parameters={'weight':'shared_doctors'}
-    )
-    # viz.plot_community_graph(G.to_undirected(), louvain_coms, figsize=(10, 10), node_size=10)
+def community_evaluation_metrics(cdlib_coms):
+    uG = cdlib_coms.graph
 
     # https://cdlib.readthedocs.io/en/latest/reference/evaluation.html
-    embeddedness = evaluation.avg_embeddedness(G, louvain_coms, summary = False)
-    average_internal_degree = evaluation.average_internal_degree(G, louvain_coms, summary = False)
-    conductance = evaluation.conductance(G, louvain_coms, summary = False)
-    transitivity = evaluation.avg_transitivity(G, louvain_coms, summary = False)
-    cut_ratio = evaluation.cut_ratio(G, louvain_coms, summary = False)
-    expansion = evaluation.expansion(G, louvain_coms, summary = False)
-    edges_inside = evaluation.edges_inside(G, louvain_coms, summary = False)
-    fraction_over_median_degree = evaluation.fraction_over_median_degree(G, louvain_coms, summary = False)
-    hub_dominance = evaluation.hub_dominance(G, louvain_coms, summary = False)
-    internal_edge_density = evaluation.internal_edge_density(G, louvain_coms, summary = False)
-    max_odf = evaluation.max_odf(G, louvain_coms, summary = False)
-    avg_odf = evaluation.avg_odf(G, louvain_coms, summary = False)
-    flake_odf = evaluation.flake_odf(G, louvain_coms, summary = False)
-    size = evaluation.size(G, louvain_coms, summary = False)
-    triangle_participation_ratio = evaluation.triangle_participation_ratio(G, louvain_coms, summary = False)
+    embeddedness = evaluation.avg_embeddedness(uG, cdlib_coms, summary = False)
+    average_internal_degree = evaluation.average_internal_degree(uG, cdlib_coms, summary = False)
+    conductance = evaluation.conductance(uG, cdlib_coms, summary = False)
+    transitivity = evaluation.avg_transitivity(uG, cdlib_coms, summary = False)
+    cut_ratio = evaluation.cut_ratio(uG, cdlib_coms, summary = False)
+    expansion = evaluation.expansion(uG, cdlib_coms, summary = False)
+    edges_inside = evaluation.edges_inside(uG, cdlib_coms, summary = False)
+    fraction_over_median_degree = evaluation.fraction_over_median_degree(uG, cdlib_coms, summary = False)
+    hub_dominance = evaluation.hub_dominance(uG, cdlib_coms, summary = False)
+    internal_edge_density = evaluation.internal_edge_density(uG, cdlib_coms, summary = False)
+    max_odf = evaluation.max_odf(uG, cdlib_coms, summary = False)
+    avg_odf = evaluation.avg_odf(uG, cdlib_coms, summary = False)
+    flake_odf = evaluation.flake_odf(uG, cdlib_coms, summary = False)
+    size = evaluation.size(uG, cdlib_coms, summary = False)
+    triangle_participation_ratio = evaluation.triangle_participation_ratio(uG, cdlib_coms, summary = False)
 
 
     eval_dict = {

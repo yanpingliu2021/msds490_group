@@ -9,11 +9,6 @@ np.set_printoptions(suppress=True)
 np.set_printoptions(precision=3)
 
 
-clinical_util = pd.read_csv("../data/raw/ClinicianUtilization_2017.csv")
-clinical_util.head()
-clinical_util.shape
-# (1354610, 10)
-
 prov = pd.read_csv("../data/raw/DAC_NationalDownloadableFile.csv",
                    dtype={
                     'NPI':str,
@@ -67,6 +62,11 @@ prov[['npi']].nunique()
 # 1163422
 prov[['npi', 'lst_nm', 'frst_nm']].drop_duplicates().shape
 # (1163422, 3)
+prov[['npi', 'lst_nm', 'frst_nm', 'gndr', 'cred',
+      'med_sch', 'grd_yr', 'pri_spec']].drop_duplicates().shape
+# (1167726, 8)
+
+
 prov = prov.loc[~prov['lst_nm'].isna()]
 prov = prov.loc[~prov['frst_nm'].isna()]
 prov.shape
@@ -75,21 +75,7 @@ prov = prov.loc[~prov['org_nm'].isna()].reset_index(drop=True)
 prov.shape
 #(2097917, 40)
 
-#prov['rank'] = prov\
-#  .groupby("npi")["num_org_mem"]\
-#  .rank(method="dense", ascending=False, na_option='keep')\
-#  .fillna(1)
 
-#prov.head()
-#prov_affl = pd.melt(
-#  prov,
-#  id_vars=['npi'],
-#  value_vars=['org_nm', 'hosp_afl_lbn_1', 'hosp_afl_lbn_2', 'hosp_afl_lbn_3', 'hosp_afl_lbn_4', 'hosp_afl_lbn_5'],
-#  value_name='afl_org_nm')\
-#    .drop(columns=['variable'])\
-#    .query('afl_org_nm==afl_org_nm')\
-#    .drop_duplicates()\
-#    .reset_index(drop=True)
 zip_lat_lon = pd.read_excel('../data/raw/us-zip-code-latitude-and-longitude.xlsx',
                             engine='openpyxl', dtype = {'Zip':str})
 zip_lat_lon.columns = [x.lower() for x in zip_lat_lon.columns]
@@ -104,13 +90,11 @@ prov = prov\
 prov.shape
 #(2078794, 42)
 
-prov_affl = prov[['npi', 'org_nm', 'org_pac_id', 'num_org_mem',
-                  'adr_ln_1', 'adr_ln_2', 'cty', 'st',	'zip',
-                  'lat', 'long']]\
+prov_affl = prov[['npi', 'org_nm', 'org_pac_id']]\
   .drop_duplicates()\
   .reset_index(drop = True)
 prov_affl.shape
-#(2072300, 11)
+#(1179477, 3)
 
 prov_affl.to_parquet('../data/processed/provider_affiliation.parquet', index=False)
 prov_affl.head()
@@ -122,21 +106,72 @@ org_demo = prov[['org_pac_id', 'org_nm', 'num_org_mem',
                   'lat', 'long']]\
   .drop_duplicates()\
   .reset_index(drop = True)
+
+org_demo_random = org_demo\
+  .groupby('org_pac_id', as_index=False)\
+  .apply(lambda x: x.sample(1, random_state=42))
+
 org_demo.shape
 #(231160, 10)
-org_demo.nunique()
-"""
-org_pac_id      75514
-org_nm          74916
-num_org_mem       668
-adr_ln_1       143240
-adr_ln_2        21934
-cty              9457
-st                 53
-zip             16256
-lat             16149
-long            16102
-"""
-org_demo.to_parquet('../data/processed/organization_demographics.parquet', index=False)
+org_demo_random.shape
+# (75514, 10)
+org_demo_random.to_parquet('../data/processed/organization_demographics.parquet', index=False)
 
 
+
+#process measurement raw data
+ec_score = pd.read_csv('../data/raw/ec_score_file.csv', dtype={'npi':str, ' org_pac_id':str})
+ec_score.columns = [x.strip() for x in ec_score.columns]
+ec_score.shape
+ec_score = ec_score\
+  .query('final_mips_score == final_mips_score')\
+  .fillna(-1)\
+  .groupby(['npi'])\
+  .agg(
+     quality_score	= ('quality_category_score', 'max'),
+     promoting_interoperability_score = ('pi_category_score', 'max'),
+     cost_score = ('cost_category_score', 'max'),
+     improvement_activities_score = ('ia_category_score', 'max'),
+     overall_mips_score = ('final_mips_score', 'max')
+  )\
+  .reset_index()
+ec_score.shape
+# (666264, 6)
+ec_score.dtypes
+
+
+
+
+prov_demo = prov[
+  ['npi', 'lst_nm', 'frst_nm', 'gndr', 'cred', 'med_sch', 'grd_yr', 'pri_spec', 'org_pac_id', 'org_nm']
+  ].drop_duplicates(subset = ['npi', 'org_pac_id']).reset_index(drop = True)
+prov_demo.shape
+# (1179477, 10)
+
+clinician_measurement = prov_demo\
+  .merge(ec_score, on = ['npi'], how = 'inner')
+
+clinician_measurement.shape
+# (594225, 15)
+clinician_measurement.isna().sum()
+clinician_measurement.replace({-1: np.nan}, inplace=True)
+clinician_measurement.isna().sum()
+
+"""
+npi                                      0
+lst_nm                                   0
+frst_nm                                  0
+gndr                                     0
+cred                                403518
+med_sch                                  2
+grd_yr                                 377
+pri_spec                                 0
+org_pac_id                               0
+org_nm                                   0
+quality_score                         3892
+promoting_interoperability_score    101960
+cost_score                          280255
+improvement_activities_score            13
+overall_mips_score                       0
+"""
+clinician_measurement.to_parquet('../data/processed/clinician_measurement.parquet', index=False)

@@ -30,7 +30,7 @@ fig = px.scatter_geo(community_metrics, lon="long", lat='lat',
                      hover_data={'total_orgs_in_community':True,
                                  'total_doctors_in_community':True},
                      size_max=15,
-                     labels=dict(trelegy_share_decile="total_shared_doctors_in_community")
+                     labels=dict(total_doctors_in_community="total_shared_doctors_in_community")
                      )
 fig.update_layout(
         title = 'Community visualization',
