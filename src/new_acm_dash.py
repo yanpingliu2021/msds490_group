@@ -14,11 +14,74 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
+import dash_cytoscape as cyto #network visualization
+
 app = dash.Dash(__name__)
 # ------------------------------------------------------------------------------
 # Import and clean data
+
+#### Community Metrics ####
 community_metrics = pd.read_csv('../data/network/affiliation_community_metrics.csv')
 community_metrics.head()
+
+#### Network Topology ####
+# Load data
+network_data = pd.read_csv('../data/network/affiliation_network_topology.csv')\
+    .query('community_id == 1')\
+    .filter(items = ['source_org_pac_id', 'target_org_pac_id'])
+
+
+# We select the first 750 edges and associated nodes for an easier visualization
+edges = network_data
+nodes = set()
+
+cy_edges = []
+cy_nodes = []
+
+for idx, network_edge in edges.iterrows():
+    source = str(network_edge['source_org_pac_id'])
+    target = str(network_edge['target_org_pac_id'])
+
+    if source not in nodes:
+        nodes.add(source)
+        cy_nodes.append({"data": {"id": source, "label": "Org #" + source[-5:]}})
+    if target not in nodes:
+        nodes.add(target)
+        cy_nodes.append({"data": {"id": target, "label": "Org #" + target[-5:]}})
+
+    cy_edges.append({
+        'data': {
+            'source': source,
+            'target': target
+        }
+    })
+
+default_stylesheet = [
+    {
+        "selector": 'node',
+        'style': {
+            "opacity": 0.65,
+        }
+    },
+    {
+        "selector": 'edge',
+        'style': {
+            "curve-style": "bezier",
+            "opacity": 0.65
+        }
+    },
+]
+
+styles = {
+    'json-output': {
+        'overflow-y': 'scroll',
+        'height': 'calc(50% - 25px)',
+        'border': 'thin lightgrey solid'
+    },
+    'tab': {
+        'height': 'calc(98vh - 105px)'
+    }
+}
 # ------------------------------------------------------------------------------
 # App layout
 app.layout = html.Div([
@@ -40,7 +103,18 @@ app.layout = html.Div([
     # html.Div(id='doctor_min_container', children=[]),
     # html.Br(),
 
-    dcc.Graph(id='acm_map', figure={})
+    dcc.Graph(id='acm_map', figure={}),
+    html.Br(),
+
+    html.Div(cyto.Cytoscape(
+            id='cytoscape',
+            elements=cy_edges + cy_nodes,
+            style={
+                'height': '95vh',
+                'width': '100%'
+            }
+        )
+    )
 
 ])
 
