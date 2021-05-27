@@ -13,7 +13,7 @@ import plotly.express as px  # (version 4.7.0)
 import dash  # (version 1.12.0) pip install dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 import dash_cytoscape as cyto #network visualization
 
@@ -94,7 +94,7 @@ styles = {
 # App layout
 app.layout = html.Div([
 
-    html.H1("Communities of Doctors Based on Affliation Network demo", style={'text-align': 'center'}),
+    html.H1("Communities of Doctors Based on Affliation Network", style={'text-align': 'center'}),
     
     html.Div(["Select Minimum Total Doctors per Community: ",
         dcc.Input(id='doctor_min',
@@ -127,9 +127,12 @@ app.layout = html.Div([
 
     html.Div([
             dcc.Markdown("""
-                **Hover Data**
+                **Community Networks**
 
-                Mouse over values in the graph.
+                Mouse over values in the graph to view the relationships between organizations in each community.
+                Connections indicate that two organizations share at least one doctor in common.
+
+                Current community displayed:
             """),
             html.Pre(id='hover-data', style=stylez['pre'])
         ], className='three columns'),
@@ -183,13 +186,47 @@ def update_graph(doc_min):
     return container, fig
 
 @app.callback(
-    Output(component_id='hover-data', component_property='children'),
-    [Input(component_id='acm_map', component_property='hoverData')]
+    [Output(component_id='hover-data', component_property='children'),
+    Output(component_id='cytoscape',component_property='elements')],
+    [Input(component_id='acm_map', component_property='hoverData')],
+    State(component_id='cytoscape', component_property='elements')
 )
-def display_hover_data(hoverData):
-    return json.dumps(hoverData, indent=2)
-    # comm_id = hoverData['points'][0]['pointIndex']
-    # return comm_id
+
+def update_cytoscape(hoverData, elements):
+    # get community ID from map
+    selected_comm_id = hoverData['points'][0]['pointIndex']+1
+
+    # update cytoscape web data to display selected community
+    query_string = 'community_id == ' + str(selected_comm_id)
+    new_network_data = pd.read_csv('../data/network/affiliation_network_topology.csv')\
+    .query(query_string)\
+    .filter(items = ['source_org_pac_id', 'target_org_pac_id'])
+
+    edges = new_network_data
+    nodes = set()
+
+    new_cy_edges = []
+    new_cy_nodes = []
+
+    for idx, network_edge in edges.iterrows():
+        source = str(network_edge['source_org_pac_id'])
+        target = str(network_edge['target_org_pac_id'])
+
+        if source not in nodes:
+            nodes.add(source)
+            new_cy_nodes.append({"data": {"id": source, "label": "Org #" + source[-5:]}})
+        if target not in nodes:
+            nodes.add(target)
+            new_cy_nodes.append({"data": {"id": target, "label": "Org #" + target[-5:]}})
+
+        new_cy_edges.append({
+            'data': {
+                'source': source,
+                'target': target
+            }
+        })
+    elements = new_cy_edges + new_cy_nodes
+    return selected_comm_id, elements
 
 ###### Run app on specified port
 if __name__ == '__main__':
