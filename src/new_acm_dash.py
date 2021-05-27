@@ -108,6 +108,7 @@ app.layout = html.Div([
 
     html.Div(cyto.Cytoscape(
             id='cytoscape',
+            layout={'name': 'circle'},
             elements=cy_edges + cy_nodes,
             style={
                 'height': '95vh',
