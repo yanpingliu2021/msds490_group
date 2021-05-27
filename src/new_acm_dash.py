@@ -6,6 +6,7 @@ Created on Sun May 23 16:09:30 2021
 @author: dbalas
 """
 import pandas as pd
+import json
 import plotly.express as px  # (version 4.7.0)
 #import plotly.graph_objects as go
 
@@ -17,6 +18,13 @@ from dash.dependencies import Input, Output
 import dash_cytoscape as cyto #network visualization
 
 app = dash.Dash(__name__)
+
+stylez = {
+    'pre': {
+        'border': 'thin lightgrey solid',
+        'overflowX': 'scroll'
+    }
+}
 # ------------------------------------------------------------------------------
 # Import and clean data
 
@@ -27,7 +35,7 @@ community_metrics.head()
 #### Network Topology ####
 # Load data
 network_data = pd.read_csv('../data/network/affiliation_network_topology.csv')\
-    .query('community_id == 1')\
+    .query('community_id == 868')\
     .filter(items = ['source_org_pac_id', 'target_org_pac_id'])
 
 
@@ -103,8 +111,28 @@ app.layout = html.Div([
     # html.Div(id='doctor_min_container', children=[]),
     # html.Br(),
 
-    dcc.Graph(id='acm_map', figure={}),
+    dcc.Graph(id='acm_map', figure={},
+        hoverData={"points": [{
+                        "curveNumber": 0,
+                        "pointNumber": 867,
+                        "pointIndex": 867,
+                        "lon": -98.69332,
+                        "lat": 26.445982,
+                        "hovertext": 868,
+                        "marker.size": 10,
+                        "marker.color": 8,
+                        "customdata": [10,13]}]}
+    ),
     html.Br(),
+
+    html.Div([
+            dcc.Markdown("""
+                **Hover Data**
+
+                Mouse over values in the graph.
+            """),
+            html.Pre(id='hover-data', style=stylez['pre'])
+        ], className='three columns'),
 
     html.Div(cyto.Cytoscape(
             id='cytoscape',
@@ -151,7 +179,17 @@ def update_graph(doc_min):
             title = 'Community visualization',
             geo_scope='usa',
         )
+    fig.update_layout(clickmode='event+select')
     return container, fig
+
+@app.callback(
+    Output(component_id='hover-data', component_property='children'),
+    [Input(component_id='acm_map', component_property='hoverData')]
+)
+def display_hover_data(hoverData):
+    return json.dumps(hoverData, indent=2)
+    # comm_id = hoverData['points'][0]['pointIndex']
+    # return comm_id
 
 ###### Run app on specified port
 if __name__ == '__main__':
