@@ -20,9 +20,6 @@ Average out degree:   5.1723
 unique communities:3307
 """
 
-affiliation_fact = pd.read_parquet('../data/network/affiliation_fact.parquet')
-affiliation_fact.head()
-
 fig = px.scatter_geo(community_metrics, lon="long", lat='lat',
                      size="total_orgs_in_community",
                      color = 'total_shared_doctors_in_community',
