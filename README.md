@@ -1,4 +1,5 @@
-# NU MSDS498 Capstone Group Project - Healthcare Orgnization Shared Doctor Affiliation Network Community Detection and Visualization
+# NU MSDS498 Capstone Group Project
+Healthcare Orgnization Shared Doctor Affiliation Network Community Detection and Visualization
 ## Team Members
 Danika Balas, Rikita Hirpara, Yanping Liu
 ## Introduction
