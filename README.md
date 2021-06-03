@@ -22,6 +22,8 @@ In network science, a community in a graph is defined as a subset of nodes that 
 
 We used the [louvain method](<https://github.com/taynaud/python-louvain>) to detect communities in the network constructed. The fitness metrics were calculated and displayed in the App. Please refer to the Helper section for the defintion of these fitness metrics.
 
+![alt text](https://github.com/yanpingliu2021/msds490_group/blob/master/data/images/community_detection.png?raw=true)
+
 ### Data Source
 
 The data used in this project were downloaded from Centers for Medicare & Medicaid Services (CMS). The data is part of the source data used to populate the [Medicare Care Compare Tool](<https://www.medicare.gov/care-compare/>) which was launched by CMS in 2020 to provide a web interface that patients and caregivers can use to make informed decisions about healthcare based on cost, quality of care, volume of services, and other data. The data contains various clinicians' performance ratings collected in the [CMS Quality Payment Program](<https://qpp.cms.gov/>)
