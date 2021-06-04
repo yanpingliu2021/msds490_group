@@ -15,7 +15,7 @@ The web app can serve as a guideline tool for users to find doctors and their af
 
 We constructed the healthcare organization affiliation network based on shared doctors. When two organizations share at least one common doctor, they establish a link within the network. The figure below illustrates how the network is constructed:
 
-![alt text](https://github.com/yanpingliu2021/msds490_group/blob/master/data/images/AffiliationNetwork.png?raw=true)
+![alt text](https://github.com/yanpingliu2021/msds490_group/blob/master/data/images/AffiliationNetwork2.png?raw=true)
 
 ### Community Detection
 
@@ -35,7 +35,7 @@ The download link: <https://data.cms.gov/provider-data/topics/doctors-clinicians
 
 ![alt text](https://github.com/yanpingliu2021/msds490_group/blob/master/data/images/WebInterface1.png?raw=true)
 
-![alt text](https://github.com/yanpingliu2021/msds490_group/blob/master/data/images/WebInterface2.png?raw=true)
+![alt text](https://github.com/yanpingliu2021/msds490_group/blob/master/data/images/WebInterface2b.png?raw=true)
 
 ## How to
 
